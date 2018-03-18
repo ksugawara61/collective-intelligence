@@ -66,3 +66,40 @@ def sim_distance(prefs, person1, person2):
     return 1/(1+sum_of_squares)
 
 
+# p1とp2のピアソン相関係数を返す
+# ピアソン相関係数はスコアで評価するのではなくスコアの差で評価する
+# 例えば二者間でスコアの付け方にばらつきがある場合でも傾向が似ていると高い相関を得られるようになる
+def sim_pearson(prefs, p1, p2):
+    # 両者が評価しているアイテムのリストを取得
+    si = {}
+    for item in prefs[p1]:
+        if item in prefs[p2]:
+            si[item] = 1
+
+    # 要素の数を調べる
+    n = len(si)
+
+    # ともに評価しているアイテムがなければ 0 を返す
+    if n == 0:
+        return 0
+
+    # すべての嗜好を合計する
+    sum1 = sum([prefs[p1][it] for it in si])
+    sum2 = sum([prefs[p2][it] for it in si])
+
+    # 平方を合計する
+    sum1Sq = sum([pow(prefs[p1][it], 2) for it in si])
+    sum2Sq = sum([pow(prefs[p2][it], 2) for it in si])
+
+    # 積を合計する
+    pSum = sum([prefs[p1][it] * prefs[p2][it] for it in si])
+
+    # ピアソンによるスコアを計算する
+    num = pSum - (sum1 * sum2 / n)
+    den = sqrt((sum1Sq - pow(sum1, 2) / n) * (sum2Sq - pow(sum2, 2) / n))
+    if den==0:
+        return 0
+
+    r = num / den
+
+    return r
