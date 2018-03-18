@@ -103,3 +103,12 @@ def sim_pearson(prefs, p1, p2):
     r = num / den
 
     return r
+
+# ディクショナリ prefsから personにもっともマッチするものたちを返す
+# 結果の数と類似性関数はオプションのパラメータ
+def topMatches(prefs, person, n = 5, similarity = sim_pearson):
+    scores = [(similarity(prefs, person, other), other) for other in prefs if other != person]
+
+    scores.sort()
+    scores.reverse()
+    return scores[0:n]
