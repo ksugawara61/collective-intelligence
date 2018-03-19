@@ -29,7 +29,7 @@ critics = {
         'You, Me and Dupree': 2.5
     },
     'Mick LaSalle': {
-        'Lady in the wATER': 3.0,
+        'Lady in the Water': 3.0,
         'Snakes on a Plane': 4.0,
         'Just My Luck': 2.0,
         'Superman Returns': 3.0,
@@ -61,7 +61,7 @@ def sim_distance(prefs, person1, person2):
     if len(si) == 0: return 0
 
     sum_of_squares = sum([pow(prefs[person1][item] - prefs[person2][item], 2)
-                          for item in prefs[person2] if item in prefs[person2]])
+                          for item in prefs[person1] if item in prefs[person2]])
 
     return 1/(1+sum_of_squares)
 
@@ -112,3 +112,37 @@ def topMatches(prefs, person, n = 5, similarity = sim_pearson):
     scores.sort()
     scores.reverse()
     return scores[0:n]
+
+# person以外の全ユーザの評価点の重み付け結果から推薦結果を算出する
+def getRecommendations(prefs, person, similarity = sim_pearson):
+    totals = {}
+    simSums = {}
+
+    for other in prefs:
+        # 自分自身とは比較しない
+        if other == person:
+            continue
+        sim = similarity(prefs, person, other)
+
+        # 0以下のスコアは無視する
+        if sim <= 0:
+            continue
+
+        for item in prefs[other]:
+            # まだ見ていない映画の得点のみを算出
+            if item not in prefs[person] or prefs[person][item] == 0:
+                # 類似性 * スコア
+                totals.setdefault(item, 0)
+                totals[item] += prefs[other][item] * sim
+
+                # 類似度の合計
+                simSums.setdefault(item, 0)
+                simSums[item] += sim
+
+    # 正規化したリストを作成
+    rankings = [(total / simSums[item], item) for item,total in totals.items()]
+
+    # ソート済みのリストを返す
+    rankings.sort()
+    rankings.reverse()
+    return rankings
